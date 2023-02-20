@@ -53,6 +53,10 @@ A commercial use license is available from Genivia, Inc., contact@genivia.com
 
 #define GSOAP_LIB_VERSION 20817
 
+#ifndef M_ASN1_STRING_data
+#define M_ASN1_STRING_data(x)	((x)->data)
+#endif
+
 #ifdef AS400
 # pragma convert(819)	/* EBCDIC to ASCII */
 #endif

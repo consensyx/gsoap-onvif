@@ -271,10 +271,7 @@ soap_mec_init(struct soap *soap, struct soap_mec_data *data, int alg, SOAP_MEC_K
 { int ok = 1;
   DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_mec_init()\n"));
   soap_ssl_init();
-  data->ctx = (EVP_CIPHER_CTX*)SOAP_MALLOC(soap, sizeof(EVP_CIPHER_CTX));
-  if (!data->ctx)
-    return soap->error = SOAP_EOM;
-  EVP_CIPHER_CTX_init(data->ctx);
+  data->ctx = EVP_CIPHER_CTX_new();
   data->alg = alg;
   data->state = SOAP_MEC_STATE_NONE;
   if (alg & SOAP_MEC_DES_CBC)
@@ -392,7 +389,7 @@ void
 soap_mec_cleanup(struct soap *soap, struct soap_mec_data *data)
 { DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_mec_cleanup()\n"));
   if (data->ctx)
-  { EVP_CIPHER_CTX_cleanup(data->ctx);
+  { EVP_CIPHER_CTX_free(data->ctx);
     SOAP_FREE(soap, data->ctx);
     data->ctx = NULL;
   }

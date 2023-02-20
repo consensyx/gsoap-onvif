@@ -429,13 +429,9 @@ soap_smd_init(struct soap *soap, struct soap_smd_data *data, int alg, const void
   data->key = key;
   /* allocate and init the OpenSSL HMAC or EVP_MD context */
   if ((alg & SOAP_SMD_ALGO) == SOAP_SMD_HMAC)
-  { data->ctx = (void*)SOAP_MALLOC(soap, sizeof(HMAC_CTX));
-    HMAC_CTX_init((HMAC_CTX*)data->ctx);
-  }
+    data->ctx = HMAC_CTX_new();
   else
-  { data->ctx = (void*)SOAP_MALLOC(soap, sizeof(EVP_MD_CTX));
-    EVP_MD_CTX_init((EVP_MD_CTX*)data->ctx);
-  }
+    data->ctx = EVP_MD_CTX_new();
   DBGLOG(TEST, SOAP_MESSAGE(fdebug, "-- SMD Init alg=%x (%p) --\n", alg, data->ctx));
   /* init the digest or signature computations */
   switch (alg & SOAP_SMD_HASH)
@@ -531,7 +527,7 @@ soap_smd_final(struct soap *soap, struct soap_smd_data *data, char *buf, int *le
     switch (data->alg & SOAP_SMD_ALGO)
     { case SOAP_SMD_HMAC:
         HMAC_Final((HMAC_CTX*)data->ctx, (unsigned char*)buf, &n);
-        HMAC_CTX_cleanup((HMAC_CTX*)data->ctx);
+        HMAC_CTX_free((HMAC_CTX*)data->ctx);
         break;
       case SOAP_SMD_DGST:
         EVP_DigestFinal((EVP_MD_CTX*)data->ctx, (unsigned char*)buf, &n);
@@ -586,9 +582,9 @@ soap_smd_check(struct soap *soap, struct soap_smd_data *data, int err, const cha
     }
     if (data->ctx)
     { if ((data->alg & SOAP_SMD_ALGO) == SOAP_SMD_HMAC)
-        HMAC_CTX_cleanup((HMAC_CTX*)data->ctx);
+        HMAC_CTX_free((HMAC_CTX*)data->ctx);
       else
-        EVP_MD_CTX_cleanup((EVP_MD_CTX*)data->ctx);
+        EVP_MD_CTX_free((EVP_MD_CTX*)data->ctx);
       SOAP_FREE(soap, data->ctx);
       data->ctx = NULL;
     }
